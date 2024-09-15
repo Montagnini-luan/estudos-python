@@ -1,3 +1,5 @@
+##caixa eletronico
+
 saldo = 1000.00
 
 menu_nav = 0
