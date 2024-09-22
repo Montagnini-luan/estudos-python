@@ -21,11 +21,6 @@ Instruções:
         formato: "Em [mês], [número] livros foram vendidos".
         
 """
-
-from altair import value
-from sympy import primenu, print_rcode
-
-
 vendas = {
     "Janeiro": 120,
     "Fevereiro": 150,
