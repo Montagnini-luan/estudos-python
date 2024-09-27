@@ -66,7 +66,7 @@ def mostrar_tabuleiro(n_erros):
 
 n_erros = 0
 
-palavra = "pthon"
+palavra = "python"
 palavra_oculta = ['_'] * len(palavra)
 
 while n_erros < 6 and '_' in palavra_oculta:
