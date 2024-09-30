@@ -24,7 +24,7 @@ def obter_enderco_cep(cep):
 
     return endereco if "erro" not in endereco else None
 
-caminho_planilha = "C:\\Users\\luanm\\OneDrive\\Desktop\\Sites\\Estudos\\estudos python\\Python RPA\\CEP.xlsx"
+caminho_planilha = "C:\\Users\\luanm\\OneDrive\\Desktop\\Sites\\Estudos\\estudos python\\Python RPA\\Buscador CEP\\CEP.xlsx"
 
 planilha_ceps = pd.read_excel(caminho_planilha, sheet_name='CEP')
 
