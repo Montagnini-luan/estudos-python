@@ -22,7 +22,9 @@ def obter_enderco_cep(cep):
 
     conexao.close()
 
-    return endereco if "erro" not in endereco else None
+    for kay, value in endereco.items():
+        kay = value
+
 
 caminho_planilha = "C:\\Users\\luanm\\OneDrive\\Desktop\\Sites\\Estudos\\estudos python\\Python RPA\\Buscador CEP\\CEP.xlsx"
 
