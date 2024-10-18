@@ -36,7 +36,7 @@ def exibir_tooltip(evento):
         valores = item['values']
         vendedor, produto, total = valores
 
-        caminho_imagem = os.path.join('C:\\Users\\luanm\\OneDrive\\Desktop\\Sites\\Estudos\\estudos python\\Tkinter Arquivos\\produtos_imagens', f'\\{produto}.jpg')
+        caminho_imagem = os.path.join('C:\\Users\\luanm\\OneDrive\\Desktop\\Sites\\Estudos\\estudos python\\Tkinter Arquivos\\produtos_imagens\\imagem', f'\\{produto}.jpg')
 
         if os.path.exists(caminho_imagem):
             imagem = Image.open(caminho_imagem)
