@@ -4,8 +4,9 @@ import pandas as pd
 
 
 def exportar_dados_filtrados():
-    pass
-
+    arquivo = filedialog.asksaveasfilename(defaultextension='.xlsx', filetypes=[('Excel Files', '*.xlsx')])
+    if arquivo:
+        df_filtrado.to_excel(arquivo, index=False)
 
 def calcular_media_situacao(df):
     df['Media'] = df[['Nota 1', 'Nota 2', 'Nota 3', 'Nota 4']].mean(axis=1).round(2)
@@ -82,6 +83,10 @@ def exibir_pagina():
 
     colorir_situacao(tree, list(df_filtrado.columns).index('Situacao'))
 
+    label_status.configure(text=f'Pagina {pagina_atual} de {num_paginas}')
+    style.map('Custom.Treeview.Heading', background=[('pressed', '#003366'), ('active', '#003366')], foreground=[('pressed', 'write'), ('active', 'white')])
+
+
 def colorir_situacao(tree, col_index):
     for item in tree.get_children():
         situacao = tree.item(item, 'values')[col_index]
@@ -105,19 +110,34 @@ def colorir_situacao(tree, col_index):
 
 
 def primeira_pagina():
-    pass
+    global pagina_atual
 
-
-def voltar_pagina():
-    pass
+    pagina_atual = 1
+    exibir_pagina()
 
 
 def avancar_pagina():
-    pass
+    global pagina_atual
+    if pagina_atual < num_paginas:
+        pagina_atual += 1
+        exibir_pagina()
+    else:
+        label_status.configure(text="Já está na última página", fg='red')
+
+def voltar_pagina():
+    global pagina_atual
+    if pagina_atual > 1:
+        pagina_atual -= 1
+        exibir_pagina()
+    else:
+        label_status.configure(text="Já está na primeira página", fg='red')
 
 
 def ultima_pagina():
-    pass
+    global pagina_atual
+
+    pagina_atual = num_paginas
+    exibir_pagina()
 
 
 janela = tk.Tk()
