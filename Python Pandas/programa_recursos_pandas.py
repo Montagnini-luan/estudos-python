@@ -95,7 +95,7 @@ class ExcelEditor:
         menu_de_merge = tk.Menu(menu_bar, **menu_config)
         menu_bar.add_cascade(label="Merge", menu=menu_de_merge)
         menu_de_merge.add_command(label="Merge", command=self.master.destroy)
-        menu_de_merge.add_command(label="Inner Join", command=self.master.destroy)
+        menu_de_merge.add_command(label="Inner Join", command=self.inner_join)
         menu_de_merge.add_command(label="Join Full", command=self.master.destroy)
         menu_de_merge.add_command(label="Left Join", command=self.master.destroy)
         menu_de_merge.add_command(label="Merge Outer", command=self.master.destroy)
@@ -492,6 +492,20 @@ class ExcelEditor:
             agrupar.destroy()
         else:
             messagebox.showerror("Erro", "Nome da coluna não pode ser vazio")
+            
+    def inner_join(self) -> None:
+        tipo_de_arquivo = (('Excel files', '*.xlsx;*.xls'), ('All files', '*.*'))
+        nome_do_arquivo1 = filedialog.askopenfilename(title="Selecione o primeiro Arquivo", filetypes=tipo_de_arquivo)
+        nome_do_arquivo2 = filedialog.askopenfilename(title="Selecione o segundo Arquivo", filetypes=tipo_de_arquivo)
+        
+        arquivo1 = pd.read_excel(nome_do_arquivo1)
+        arquivo2 = pd.read_excel(nome_do_arquivo2)
+        
+        coluna_join = simpledialog.askstring("Coluna de Join", "Digite o nome da coluna que deseja usar para o join:")
+        
+        self.df = pd.merge(arquivo1, arquivo2, on=coluna_join, how='inner')  # inner join
+        self.atualiza_treeview()
+        self.soma_colunas_valor()
         
 def main():
     janela = Tk()
