@@ -4,6 +4,8 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 import pandas as pd
 import numpy as np  
 from pandastable import Table
+import os
+import re
 
 
 class ExcelEditor:
@@ -58,6 +60,7 @@ class ExcelEditor:
         self.file_name = ''
 
         self.criar_widgets()
+        self.tree.bind('<Double-1>', self.editar_itens)
     
     def criar_widgets(self) -> None:
         # Estilo moderno para o menu
@@ -75,7 +78,7 @@ class ExcelEditor:
         menu_bar.add_cascade(label="Arquivo", menu=menu_de_arquivo)
         menu_de_arquivo.add_command(label="Abrir", command=self.carregar_excel)
         menu_de_arquivo.add_separator()
-        menu_de_arquivo.add_command(label="Salvar Como", command=self.master.destroy)
+        menu_de_arquivo.add_command(label="Salvar Como", command=self.salvar_como)
         menu_de_arquivo.add_separator()
         menu_de_arquivo.add_command(label="Sair", command=self.master.destroy)
         
@@ -96,15 +99,15 @@ class ExcelEditor:
         menu_bar.add_cascade(label="Merge", menu=menu_de_merge)
         menu_de_merge.add_command(label="Merge", command=self.master.destroy)
         menu_de_merge.add_command(label="Inner Join", command=self.inner_join)
-        menu_de_merge.add_command(label="Join Full", command=self.master.destroy)
-        menu_de_merge.add_command(label="Left Join", command=self.master.destroy)
-        menu_de_merge.add_command(label="Merge Outer", command=self.master.destroy)
+        menu_de_merge.add_command(label="Join Full", command=self.inner_join_full)
+        menu_de_merge.add_command(label="Left Join", command=self.inner_join_left)
+        menu_de_merge.add_command(label="Merge Outer", command=self.merge_outer)
         
         ''' Menu de Relatórios '''
         menu_de_relatorios = tk.Menu(menu_bar, **menu_config)
         menu_bar.add_cascade(label="Relatórios", menu=menu_de_relatorios)
-        menu_de_relatorios.add_command(label="Consolidar", command=self.master.destroy)
-        menu_de_relatorios.add_command(label="Quebra", command=self.master.destroy)
+        menu_de_relatorios.add_command(label="Consolidar", command=self.consolidar_arquivos)
+        menu_de_relatorios.add_command(label="Quebra", command=self.quebrar_arquivos)
         
         self.master.config(menu=menu_bar)
         
@@ -124,6 +127,42 @@ class ExcelEditor:
         vsb.pack(side=RIGHT, fill=Y)
         hsb.pack(side=BOTTOM, fill=X)
         self.tree.pack(fill=BOTH, expand=True)
+        
+        # Adicionar tooltips aos menus
+        self.criar_tooltips()
+        
+        # Adicionar barra de status
+        self.status_bar = Label(self.master, 
+                               text="Pronto", 
+                               bd=1, 
+                               relief=SUNKEN, 
+                               anchor=W,
+                               bg=self.cor_secundaria,
+                               fg=self.cor_primaria)
+        self.status_bar.pack(side=BOTTOM, fill=X)
+        
+        # Bind de eventos
+        self.tree.bind('<Double-1>', self.editar_itens)
+        self.tree.bind('<Delete>', lambda e: self.remover_linha())
+        self.master.bind('<Control-s>', lambda e: self.salvar_como())
+        self.master.bind('<Control-o>', lambda e: self.carregar_excel())
+    
+    def criar_tooltips(self) -> None:
+        # Implementar tooltips para os menus
+        pass
+    
+    def remover_linha(self) -> None:
+        try:
+            selected_item = self.tree.selection()[0]
+            indice = self.tree.index(selected_item)
+            self.df = self.df.drop(self.df.index[indice])
+            self.tree.delete(selected_item)
+            self.soma_colunas_valor()
+            self.status_bar.config(text="Linha removida com sucesso")
+        except IndexError:
+            messagebox.showerror("Erro", "Selecione uma linha para remover")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao remover linha: {str(e)}")
     
     def soma_colunas_valor(self) -> None:
         resultados = []
@@ -184,7 +223,7 @@ class ExcelEditor:
         janela_renomear.configure(bg=self.cor_secundaria)
         
         largura_janela = 400
-        altura_janela = 350
+        altura_janela = 400
         
         largura_tela = self.master.winfo_screenwidth()
         altura_tela = self.master.winfo_screenheight()
@@ -227,7 +266,7 @@ class ExcelEditor:
         janela_remover_linhas.configure(bg=self.cor_secundaria)
         
         largura_janela = 400
-        altura_janela = 350
+        altura_janela = 400
         
         largura_tela = self.master.winfo_screenwidth()
         altura_tela = self.master.winfo_screenheight()
@@ -296,7 +335,7 @@ class ExcelEditor:
         janela_remover_duplicatas.configure(bg=self.cor_secundaria)
         
         largura_janela = 500
-        altura_janela = 350
+        altura_janela = 400
         
         largura_tela = self.master.winfo_screenwidth()
         altura_tela = self.master.winfo_screenheight()
@@ -343,7 +382,7 @@ class ExcelEditor:
         remover_colunas.configure(bg=self.cor_secundaria)
         
         largura_janela = 500
-        altura_janela = 350
+        altura_janela = 400
         
         largura_tela = self.master.winfo_screenwidth()
         altura_tela = self.master.winfo_screenheight()
@@ -390,7 +429,7 @@ class ExcelEditor:
         filtrar.configure(bg=self.cor_secundaria)
         
         largura_janela = 500
-        altura_janela = 350
+        altura_janela = 400
         
         largura_tela = self.master.winfo_screenwidth()
         altura_tela = self.master.winfo_screenheight()
@@ -441,7 +480,7 @@ class ExcelEditor:
         agrupar.configure(bg=self.cor_secundaria)
         
         largura_janela = 500
-        altura_janela = 350
+        altura_janela = 400
         
         largura_tela = self.master.winfo_screenwidth()
         altura_tela = self.master.winfo_screenheight()
@@ -507,6 +546,200 @@ class ExcelEditor:
         self.atualiza_treeview()
         self.soma_colunas_valor()
         
+    def inner_join_full(self) -> None:
+        tipo_de_arquivo = (('Excel files', '*.xlsx;*.xls'), ('All files', '*.*'))
+        nome_do_arquivo1 = filedialog.askopenfilename(title="Selecione o primeiro Arquivo", filetypes=tipo_de_arquivo)
+        nome_do_arquivo2 = filedialog.askopenfilename(title="Selecione o segundo Arquivo", filetypes=tipo_de_arquivo)
+        
+        arquivo1 = pd.read_excel(nome_do_arquivo1)
+        arquivo2 = pd.read_excel(nome_do_arquivo2)
+        
+        self.df = pd.concat([arquivo1, arquivo2])
+        
+        self.atualiza_treeview()
+        self.soma_colunas_valor()
+        
+    def inner_join_left(self) -> None:
+        tipo_de_arquivo = (('Excel files', '*.xlsx;*.xls'), ('All files', '*.*'))
+        nome_do_arquivo1 = filedialog.askopenfilename(title="Selecione o primeiro Arquivo", filetypes=tipo_de_arquivo)
+        nome_do_arquivo2 = filedialog.askopenfilename(title="Selecione o segundo Arquivo", filetypes=tipo_de_arquivo)
+        
+        coluna_join = simpledialog.askstring("Coluna de Join", "Digite o nome da coluna que deseja usar para o join:")
+        
+        arquivo1 = pd.read_excel(nome_do_arquivo1)
+        arquivo2 = pd.read_excel(nome_do_arquivo2)
+        
+        self.df = pd.merge(arquivo1, arquivo2, on=coluna_join, how='left')  # left join
+        self.df = self.df.dropna()
+        
+        self.atualiza_treeview()
+        self.soma_colunas_valor()
+        
+    def merge_outer(self) -> None:
+        tipo_de_arquivo = (('Excel files', '*.xlsx;*.xls'), ('All files', '*.*'))
+        nome_do_arquivo1 = filedialog.askopenfilename(title="Selecione o primeiro Arquivo", filetypes=tipo_de_arquivo)
+        nome_do_arquivo2 = filedialog.askopenfilename(title="Selecione o segundo Arquivo", filetypes=tipo_de_arquivo)
+        
+        coluna_join = simpledialog.askstring("Coluna de Join", "Digite o nome da coluna que deseja usar para o join:")
+        
+        arquivo1 = pd.read_excel(nome_do_arquivo1)
+        arquivo2 = pd.read_excel(nome_do_arquivo2)
+        
+        self.df = pd.merge(arquivo1, arquivo2, on=coluna_join, how='outer')
+        self.df = self.df.dropna()
+        
+        self.atualiza_treeview()
+        self.soma_colunas_valor()
+        
+    def salvar_como(self) -> None:
+        tipo_de_arquivo = (('Excel files', '*.xlsx;*.xls'), ('All files', '*.*'))
+        nome_do_arquivo = filedialog.asksaveasfilename(title="Salvar como", filetypes=tipo_de_arquivo, defaultextension=".xlsx")
+        
+        if nome_do_arquivo:
+            self.df.to_excel(nome_do_arquivo, index=False)
+        else:
+            messagebox.showerror("Erro", "Nome do arquivo não pode ser vazio")
+            
+    def editar_itens(self, event) -> None:
+        try:
+            item_selecionado = self.tree.selection()[0]
+            valores = self.tree.item(item_selecionado, 'values')
+            
+            janela_editar_itens = tk.Toplevel(self.master)
+            janela_editar_itens.title("Editar Itens")
+            janela_editar_itens.configure(bg=self.cor_secundaria)
+            
+            # Centralizar a janela
+            largura_janela = 400
+            altura_janela = 400
+            largura_tela = self.master.winfo_screenwidth()
+            altura_tela = self.master.winfo_screenheight()
+            posicao_x = (largura_tela // 2) - (largura_janela // 2)
+            posicao_y = (altura_tela // 2) - (altura_janela // 2)
+            janela_editar_itens.geometry(f"{largura_janela}x{altura_janela}+{posicao_x}+{posicao_y}")
+            
+            # Frame para organizar os widgets
+            frame_edicao = Frame(janela_editar_itens, bg=self.cor_secundaria, padx=20, pady=20)
+            frame_edicao.pack(fill=BOTH, expand=True)
+            
+            entries = []  # Lista para armazenar as entries
+            
+            for i, coluna in enumerate(self.df.columns):
+                label_coluna = Label(frame_edicao, 
+                                   text=coluna, 
+                                   font=("Segoe UI", 12),
+                                   bg=self.cor_secundaria,
+                                   fg=self.cor_primaria)
+                label_coluna.grid(row=i, column=0, padx=10, pady=5, sticky='e')
+                
+                entry_coluna = Entry(frame_edicao, 
+                                   font=("Segoe UI", 12),
+                                   bg="white",
+                                   fg=self.cor_primaria)
+                entry_coluna.insert(0, valores[i])
+                entry_coluna.grid(row=i, column=1, padx=10, pady=5, sticky='ew')
+                entries.append(entry_coluna)
+            
+            frame_edicao.grid_columnconfigure(1, weight=1)
+            
+            # Frame para botões
+            frame_botoes = Frame(frame_edicao, bg=self.cor_secundaria)
+            frame_botoes.grid(row=len(self.df.columns), column=0, columnspan=2, pady=20)
+            
+            botao_salvar = Button(frame_botoes, 
+                                text="Salvar", 
+                                font=("Segoe UI", 12),
+                                bg=self.cor_primaria,
+                                fg=self.cor_secundaria,
+                                activebackground=self.cor_destaque,
+                                activeforeground="white",
+                                command=lambda: self.salvar_alteracoes(item_selecionado, entries, janela_editar_itens))
+            
+            botao_salvar.pack(side=LEFT, padx=5)
+            
+            botao_cancelar = Button(frame_botoes,
+                                  text="Cancelar",
+                                  font=("Segoe UI", 12),
+                                  bg=self.cor_primaria,
+                                  fg=self.cor_secundaria,
+                                  activebackground=self.cor_destaque,
+                                  activeforeground="white",
+                                  command=janela_editar_itens.destroy)
+            
+            botao_cancelar.pack(side=LEFT, padx=5)
+            
+        except IndexError:
+            messagebox.showerror("Erro", "Por favor, selecione um item para editar.")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro ao editar: {str(e)}")
+
+    def salvar_alteracoes(self, item_selecionado, entries, janela_editar_itens) -> None:
+        try:
+            novo_valor = [entry.get() for entry in entries]
+            
+            # Converter valores para tipos compatíveis
+            for i, valor in enumerate(novo_valor):
+                coluna = self.df.columns[i]
+                if pd.api.types.is_numeric_dtype(self.df[coluna]):
+                    try:
+                        novo_valor[i] = pd.to_numeric(valor)
+                    except ValueError:
+                        messagebox.showerror("Erro", f"Valor inválido para a coluna {coluna}")
+                        return
+            
+            indice = self.tree.index(item_selecionado)
+            self.df.iloc[indice] = novo_valor
+            self.tree.item(item_selecionado, values=novo_valor)
+            self.soma_colunas_valor()
+            janela_editar_itens.destroy()
+            messagebox.showinfo("Sucesso", "Dados atualizados com sucesso!")
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao salvar alterações: {str(e)}")
+        
+    def consolidar_arquivos(self) -> None:
+        try:
+            
+            """seleciona a pasta que contém os arquivos a serem consolidados"""
+            
+            caminho_pasta = filedialog.askdirectory(title="Selecione a pasta que contém os arquivos a serem consolidados")
+            lista_arquivos = os.listdir(caminho_pasta)
+            
+            lista_caminho_e_arquivos_excel = [caminho_pasta + "\\" + arquivo for arquivo in lista_arquivos if arquivo.endswith('.xlsx') or arquivo.endswith('.xls')]
+            
+            dados_arquivos = pd.DataFrame()
+            
+            for arquivo in lista_caminho_e_arquivos_excel:
+                dados = pd.read_excel(arquivo)
+                dados_arquivos = pd.concat([dados_arquivos, dados], ignore_index=True)
+                
+            self.df = dados_arquivos
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao consolidar arquivos: {e}")
+        
+        self.atualiza_treeview()
+        self.soma_colunas_valor()
+        
+    def quebrar_arquivos(self) -> None:
+        coluna = simpledialog.askstring("Coluna de Quebra", "Digite o nome da coluna que deseja usar para quebrar o arquivo:")
+        
+        if coluna:
+            grupos = self.df.groupby(coluna)
+            pasta_salvar = filedialog.askdirectory(title="Selecione a pasta onde deseja salvar os arquivos quebrados")
+            
+            if pasta_salvar:
+                for valor, grupo in grupos:
+                    nome_arquivo = re.sub(r'[^\w\-_\. ]', '_', f'{coluna}_{valor}.xlsx')
+                    caminho_arquivo = os.path.join(pasta_salvar, nome_arquivo)
+                    grupo.to_excel(caminho_arquivo, index=False)
+                    
+                messagebox.showinfo("Sucesso", "Arquivos quebrados com sucesso")
+            else:
+                messagebox.showerror("Erro", "Pasta de salvamento não selecionada")
+        else:
+            messagebox.showerror("Erro", "Nome da coluna não pode ser vazio")
+
 def main():
     janela = Tk()
     janela.title("Editor de Excel com Pandas")
