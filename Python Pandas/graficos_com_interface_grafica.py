@@ -136,10 +136,10 @@ class Application(Frame):
         # Botões de gráficos
         graficos = [
             ("Colunas", self.abrir_janela_colunas),
-            ("Pizza", self.criar_grafico_pizza),
-            ("Linhas", self.criar_grafico_linhas),
-            ("Área", self.criar_grafico_area),
-            ("Funil", self.criar_grafico_funil)
+            ("Pizza", self.abrir_janela_pizza),
+            ("Linhas", self.abrir_janela_linhas),
+            ("Área", self.abrir_janela_area),
+            ("Funil", self.abrir_janela_funil)
         ]
         
         for i, (texto, comando) in enumerate(graficos, 1):
@@ -229,51 +229,524 @@ class Application(Frame):
             self.btn_gerar_1 = ttk.Button(self.janela_colunas, text="Grafico 1", style='Dashboard.TButton', command=self.criar_grafico_colunas)
             self.btn_gerar_1.pack(side=LEFT, padx=5, pady=5)
 
-            self.btn_gerar_2 = ttk.Button(self.janela_colunas, text="Grafico 2", style='Dashboard.TButton', command=self.criar_grafico_colunas)
+            self.btn_gerar_2 = ttk.Button(self.janela_colunas, text="Grafico 2", style='Dashboard.TButton', command=self.criar_grafico_colunas_2)
             self.btn_gerar_2.pack(side=LEFT, padx=5, pady=5)
             
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao abrir a janela de colunas: {str(e)}")
-            self.janela_colunas.destroy()
-            
+            self.janela_colunas.destroy() 
         
     def criar_grafico_colunas(self):
-        self.ax.clear()
+        try:
+            self.ax.clear()
+            
+            col_x = self.cb_eixo_x.get()
+            col_y = self.cb_eixo_y.get()
+            titulo_grafico = self.entry_titulo.get()
+            nome_imagem = self.cb_imagem.get()
+            
+            df_agrupado = self.df.groupby(col_x).sum()[col_y]
+            
+            self.ax.bar(df_agrupado.index, df_agrupado.values)
+            self.ax.set_xlabel(col_x)
+            self.ax.set_ylabel(col_y)
+            self.ax.set_title(f"Grafico de Colunas - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
+            self.ax.set_xticks(range(len(df_agrupado.index)))
+            self.ax.set_xticklabels(df_agrupado.index, rotation=45, ha='right')
+            
+            for i, v in enumerate(df_agrupado.values):
+                self.ax.annotate(f'{v:.2f}', xy=(i, v), ha='center', va='bottom')
+            
+            self.canvas.draw()
+            
+            # Salvando a imagem
+            if nome_imagem:
+                caminho_nome_imagem = f'{nome_imagem}.png'
+                caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
+                self.ax.figure.savefig(caminho_imagem, dpi=80)
+            
+            self.janela_colunas.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar o gráfico: {str(e)}")
         
-        col_x = self.cb_eixo_x.get()
-        col_y = self.cb_eixo_y.get()
-        img = self.cb_imagem.get()
-        
-        df_agrupado = self.df.groupby(col_x).sum()[col_y]
-        
-        titulo_grafico = self.entry_titulo.get()
-        
-        self.ax.bar(df_agrupado.index, df_agrupado.values)
-        self.ax.set_xlabel(col_x)
-        self.ax.set_ylabel(col_y)
-        self.ax.set_title(f"Grafico de Colunas - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
-        
-        for i, v in enumerate(df_agrupado.values):
-            self.ax.annotate(str(v), xy=(i, v), ha='center', va='bottom')
-        
-        self.canvas.draw()
-        
-    def criar_grafico_pizza(self):
-        # Implementar gráfico de pizza
-        pass
-        
-    def criar_grafico_linhas(self):
-        # Implementar gráfico de linhas
-        pass
-        
-    def criar_grafico_area(self):
-        # Implementar gráfico de área
-        pass
-        
-    def criar_grafico_funil(self):
-        # Implementar gráfico de funil
-        pass
+    def criar_grafico_colunas_2(self):
+        try:
+            self.ax.clear()
+            
+            col_x = self.cb_eixo_x.get()
+            col_y = self.cb_eixo_y.get()
+            titulo_grafico = self.entry_titulo.get()
+            nome_imagem = self.cb_imagem.get()
+            
+            df_agrupado = self.df.groupby(col_x).sum()[col_y]
+            
+            self.ax.bar(df_agrupado.index, df_agrupado.values)
+            self.ax.set_xlabel(col_x)
+            self.ax.set_ylabel(col_y)
+            self.ax.set_title(f"Grafico de Colunas - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
+            self.ax.set_xticks(range(len(df_agrupado.index)))
+            self.ax.set_xticklabels(df_agrupado.index, rotation=45, ha='right')
+            self.ax.grid(True, axis='y')
+            self.ax.figure.set_size_inches(10, 6)
+            
+            for i, v in enumerate(df_agrupado.values):
+                self.ax.annotate(f'{v:.2f}', xy=(i, v), ha='center', va='bottom')
+            
+            self.canvas.draw()
+            
+            # Salvando a imagem
+            if nome_imagem:
+                caminho_nome_imagem = f'{nome_imagem}.png'
+                caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
+                self.ax.figure.savefig(caminho_imagem, dpi=80)
+            
+            self.janela_colunas.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar o gráfico: {str(e)}")
+    
+    def abrir_janela_pizza(self):
+        try:
+            self.janela_pizza = Toplevel(self.master)
+            self.janela_pizza.title("Grafico de Pizza")
+            self.janela_pizza.geometry("300x300")
+            self.janela_pizza.grab_set()
+            
+            self.lb_eixo_x = ttk.Label(self.janela_pizza, text="Eixo X:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_eixo_x.pack(pady=5)
+            
+            self.cb_eixo_x = Combobox(self.janela_pizza, values=self.df.columns.tolist())
+            self.cb_eixo_x.pack(pady=5)
+            
+            self.lb_eixo_y = ttk.Label(self.janela_pizza, text="Eixo Y:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_eixo_y.pack(pady=5)
+            
+            self.cb_eixo_y = Combobox(self.janela_pizza, values=self.df.columns.tolist())
+            self.cb_eixo_y.pack(pady=5)
+            
+            self.lb_titulo = ttk.Label(self.janela_pizza, text="Titulo:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_titulo.pack(pady=5)
+            
+            self.entry_titulo = Entry(self.janela_pizza, width=20)
+            self.entry_titulo.pack(pady=5)
+            
+            self.lb_imagem = ttk.Label(self.janela_pizza, text="Imagem:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_imagem.pack(pady=5)
+            
+            self.cb_imagem = Combobox(self.janela_pizza, 
+                                    values=['image1', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7', 'image8'],
+                                    style='Dashboard.TCombobox', font=('Segoe UI', 10))
+            self.cb_imagem.pack(pady=5)
+            
+            self.btn_gerar_1 = ttk.Button(self.janela_pizza, text="Grafico 1", style='Dashboard.TButton', command=self.criar_grafico_pizza)
+            self.btn_gerar_1.pack(side=LEFT, padx=5, pady=5)
 
+            self.btn_gerar_2 = ttk.Button(self.janela_pizza, text="Grafico 2", style='Dashboard.TButton', command=self.criar_grafico_pizza_2)
+            self.btn_gerar_2.pack(side=LEFT, padx=5, pady=5)
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao abrir a janela de pizza: {str(e)}")
+            self.janela_pizza.destroy()
+            
+    def criar_grafico_pizza(self):
+        try:
+            self.ax.clear()
+            
+            col_x = self.cb_eixo_x.get()
+            col_y = self.cb_eixo_y.get()
+            titulo_grafico = self.entry_titulo.get()
+            nome_imagem = self.cb_imagem.get()
+            
+            df_agrupado = self.df.groupby(col_x).sum()[col_y]
+            
+            total = df_agrupado.sum()
+            pedacos = [(v / total) * 100 for v in df_agrupado.values]  # calculando o percentual    
+            
+            self.ax.pie(df_agrupado.values, labels=[f'{label} ({pedacos:.1f} %)' for label, pedacos in zip(df_agrupado.index, pedacos)], autopct='%1.0f%%')
+            self.ax.set_title(f"Grafico de Pizza - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
+            
+            for i, v in enumerate(df_agrupado.values):
+                self.ax.annotate(f'{v:.2f}', xy=(i, v), ha='center', va='bottom')
+
+            self.canvas.draw()
+            
+            # Salvando a imagem
+            if nome_imagem:
+                caminho_nome_imagem = f'{nome_imagem}.png'
+                caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
+                self.ax.figure.savefig(caminho_imagem, dpi=80)
+            
+            self.janela_pizza.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar o gráfico: {str(e)}")
+            
+    def criar_grafico_pizza_2(self):
+        try:
+            self.ax.clear()
+            
+            col_x = self.cb_eixo_x.get()
+            col_y = self.cb_eixo_y.get()
+            titulo_grafico = self.entry_titulo.get()
+            nome_imagem = self.cb_imagem.get()
+            
+            df_agrupado = self.df.groupby(col_x).sum()[col_y]
+            
+            total = df_agrupado.sum()
+            #pedacos = [(v / total) * 100 for v in df_agrupado.values]  # calculando o percentual    
+            
+            self.ax.pie(df_agrupado.values, labels=[f'{label} ({value:.0f})' for label, value in zip(df_agrupado.index, df_agrupado.values)])
+            self.ax.set_title(f"Grafico de Pizza - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
+            
+            for i, v in enumerate(df_agrupado.values):
+                self.ax.annotate(f'{v:.2f}', xy=(i, v), ha='center', va='bottom')
+                
+            self.canvas.draw()
+            
+            # Salvando a imagem
+            if nome_imagem:
+                caminho_nome_imagem = f'{nome_imagem}.png'
+                caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
+                self.ax.figure.savefig(caminho_imagem, dpi=80)
+            
+            self.janela_pizza.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar o gráfico: {str(e)}")
+        
+    def abrir_janela_linhas(self):
+        try:
+            self.janela_linhas = Toplevel(self.master)
+            self.janela_linhas.title("Grafico de Linhas")
+            self.janela_linhas.geometry("300x300")
+            self.janela_linhas.grab_set()
+            
+            self.lb_eixo_x = ttk.Label(self.janela_linhas, text="Eixo X:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_eixo_x.pack(pady=5)
+            
+            self.cb_eixo_x = Combobox(self.janela_linhas, values=self.df.columns.tolist())
+            self.cb_eixo_x.pack(pady=5)
+            
+            self.lb_eixo_y = ttk.Label(self.janela_linhas, text="Eixo Y:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_eixo_y.pack(pady=5)
+            
+            self.cb_eixo_y = Combobox(self.janela_linhas, values=self.df.columns.tolist())
+            self.cb_eixo_y.pack(pady=5)
+            
+            self.lb_titulo = ttk.Label(self.janela_linhas, text="Titulo:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_titulo.pack(pady=5)
+            
+            self.entry_titulo = Entry(self.janela_linhas, width=20)
+            self.entry_titulo.pack(pady=5)
+            
+            self.lb_imagem = ttk.Label(self.janela_linhas, text="Imagem:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_imagem.pack(pady=5)
+            
+            self.cb_imagem = Combobox(self.janela_linhas, 
+                                    values=['image1', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7', 'image8'],
+                                    style='Dashboard.TCombobox', font=('Segoe UI', 10))
+            self.cb_imagem.pack(pady=5)
+            
+            self.btn_gerar_1 = ttk.Button(self.janela_linhas, text="Grafico 1", style='Dashboard.TButton', command=self.criar_grafico_linhas)
+            self.btn_gerar_1.pack(side=LEFT, padx=5, pady=5)
+
+            self.btn_gerar_2 = ttk.Button(self.janela_linhas, text="Grafico 2", style='Dashboard.TButton', command=self.criar_grafico_linhas_2)
+            self.btn_gerar_2.pack(side=LEFT, padx=5, pady=5)
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao abrir a janela de linhas: {str(e)}")
+            self.janela_linhas.destroy()
+            
+    def criar_grafico_linhas(self):
+        try:
+            self.ax.clear()
+            
+            col_x = self.cb_eixo_x.get()
+            col_y = self.cb_eixo_y.get()
+            titulo_grafico = self.entry_titulo.get()
+            nome_imagem = self.cb_imagem.get()
+            
+            df_agrupado = self.df.groupby(col_x).sum()[col_y]
+            
+            self.ax.plot(df_agrupado.index, df_agrupado.values, marker='o', linestyle='-', color='b')
+            self.ax.set_xlabel(col_x)
+            self.ax.set_ylabel(col_y)
+            self.ax.set_title(f"Grafico de Linhas - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
+            
+            for i, v in enumerate(df_agrupado.values):
+                self.ax.annotate(f'{v:.0f}', xy=(df_agrupado.index[i], df_agrupado.values[i]), ha='center', va='bottom')
+
+            self.canvas.draw()
+            
+            # Salvando a imagem
+            if nome_imagem:
+                caminho_nome_imagem = f'{nome_imagem}.png'
+                caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
+                self.ax.figure.savefig(caminho_imagem, dpi=80)
+            
+            self.janela_linhas.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar o gráfico: {str(e)}")
+            
+    def criar_grafico_linhas_2(self):
+        try:
+            self.ax.clear()
+            
+            col_x = self.cb_eixo_x.get()
+            col_y = self.cb_eixo_y.get()
+            titulo_grafico = self.entry_titulo.get()
+            nome_imagem = self.cb_imagem.get()
+            
+            df_agrupado = self.df.groupby(col_x).sum()[col_y]
+            
+            self.ax.plot(df_agrupado.index, df_agrupado.values, '-o', color='mediumseagreen', linewidth=2, markersize=8)
+            self.ax.set_xlabel(col_x)
+            self.ax.set_ylabel(col_y)
+            self.ax.set_title(f"Grafico de Linhas - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
+            
+            for i, v in enumerate(df_agrupado.values):
+                valor_formatado = f'{v:.0f}'.format(v)
+                self.ax.annotate(valor_formatado, xy=(df_agrupado.index[i], df_agrupado.values[i]), ha='center', va='bottom', fontsize=10)
+            
+            self.ax.set_facecolor('white')
+            self.ax.grid(color='lightgray', linestyle='--', linewidth=0.5)
+            self.ax.set_xticks(range(len(df_agrupado.index)))
+            self.ax.set_xticklabels(df_agrupado.index, rotation=45)
+            
+            self.canvas.draw()
+            
+            # Salvando a imagem
+            if nome_imagem:
+                caminho_nome_imagem = f'{nome_imagem}.png'
+                caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
+                self.ax.figure.savefig(caminho_imagem, dpi=80)
+            
+            self.janela_linhas.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar o gráfico: {str(e)}")
+        
+    def abrir_janela_area(self):
+        try:
+            self.janela_area = Toplevel(self.master)
+            self.janela_area.title("Grafico de Area")
+            self.janela_area.geometry("300x300")
+            self.janela_area.grab_set()
+            
+            self.lb_eixo_x = ttk.Label(self.janela_area, text="Eixo X:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_eixo_x.pack(pady=5)
+            
+            self.cb_eixo_x = Combobox(self.janela_area, values=self.df.columns.tolist())
+            self.cb_eixo_x.pack(pady=5)
+            
+            self.lb_eixo_y = ttk.Label(self.janela_area, text="Eixo Y:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_eixo_y.pack(pady=5)
+            
+            self.cb_eixo_y = Combobox(self.janela_area, values=self.df.columns.tolist())
+            self.cb_eixo_y.pack(pady=5)
+            
+            self.lb_titulo = ttk.Label(self.janela_area, text="Titulo:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_titulo.pack(pady=5)
+            
+            self.entry_titulo = Entry(self.janela_area, width=20)
+            self.entry_titulo.pack(pady=5)
+            
+            self.lb_imagem = ttk.Label(self.janela_area, text="Imagem:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_imagem.pack(pady=5)
+            
+            self.cb_imagem = Combobox(self.janela_area, 
+                                    values=['image1', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7', 'image8'],
+                                    style='Dashboard.TCombobox', font=('Segoe UI', 10))
+            self.cb_imagem.pack(pady=5)
+            
+            self.btn_gerar_1 = ttk.Button(self.janela_area, text="Grafico 1", style='Dashboard.TButton', command=self.criar_grafico_area)
+            self.btn_gerar_1.pack(side=LEFT, padx=5, pady=5)
+
+            self.btn_gerar_2 = ttk.Button(self.janela_area, text="Grafico 2", style='Dashboard.TButton', command=self.criar_grafico_area_2)
+            self.btn_gerar_2.pack(side=LEFT, padx=5, pady=5)
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao abrir a janela de area: {str(e)}")
+            self.janela_area.destroy()
+            
+    def criar_grafico_area(self):
+        try:
+            self.ax.clear()
+            
+            col_x = self.cb_eixo_x.get()
+            col_y = self.cb_eixo_y.get()
+            titulo_grafico = self.entry_titulo.get()
+            nome_imagem = self.cb_imagem.get()
+            
+            df_agrupado = self.df.groupby(col_x).sum()[col_y]
+            
+            self.ax.fill_between(df_agrupado.index, df_agrupado.values, color='lightblue', alpha=0.2)
+            
+            self.ax.plot(df_agrupado.index, df_agrupado.values, color='mediumseagreen')
+            self.ax.set_xlabel(col_x)
+            self.ax.set_ylabel(col_y)
+            self.ax.set_title(f"Grafico de Area - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
+            
+            for i, v in enumerate(df_agrupado.values):
+                self.ax.annotate(f'{v:.0f}', xy=(df_agrupado.index[i], df_agrupado.values[i]), ha='center', va='bottom')
+
+            self.ax.set_facecolor('white')
+            self.ax.grid(color='lightgray', linestyle='--', linewidth=0.5)
+            self.ax.set_xticks(range(len(df_agrupado.index)))
+            self.ax.set_xticklabels(df_agrupado.index, rotation=45)
+            
+            self.canvas.draw()
+            
+            # Salvando a imagem
+            if nome_imagem:
+                caminho_nome_imagem = f'{nome_imagem}.png'
+                caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
+                self.ax.figure.savefig(caminho_imagem, dpi=80)
+            
+            self.janela_area.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar o gráfico: {str(e)}")
+            
+    def criar_grafico_area_2(self):
+        try:
+            self.ax.clear()
+            
+            col_x = self.cb_eixo_x.get()
+            col_y = self.cb_eixo_y.get()
+            titulo_grafico = self.entry_titulo.get()
+            nome_imagem = self.cb_imagem.get()
+            
+            df_agrupado = self.df.groupby(col_x).sum()[col_y]
+            
+            self.ax.fill_between(df_agrupado.index, df_agrupado.values, color='lightblue', alpha=0.2)
+            
+            self.ax.plot(df_agrupado.index, df_agrupado.values, color='red', label=f'{col_y} (linha)')
+            self.ax.set_xlabel(col_x)
+            self.ax.set_ylabel('A soma de ' + col_y)
+            self.ax.legend()
+            self.ax.grid(True)
+            self.ax.set_title(f"Grafico de Area - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
+            
+            for i, v in enumerate(df_agrupado.values):
+                self.ax.annotate(f'{v:.0f}', xy=(df_agrupado.index[i], df_agrupado.values[i]), ha='center', va='bottom')
+
+            self.ax.set_facecolor('white')
+            self.ax.grid(color='lightgray', linestyle='--', linewidth=0.5)
+            self.ax.set_xticks(range(len(df_agrupado.index)))
+            self.ax.set_xticklabels(df_agrupado.index, rotation=45)
+            
+            self.canvas.draw()
+            
+            # Salvando a imagem
+            if nome_imagem:
+                caminho_nome_imagem = f'{nome_imagem}.png'
+                caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
+                self.ax.figure.savefig(caminho_imagem, dpi=80)
+            
+            self.janela_area.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar o gráfico: {str(e)}")
+        
+    def abrir_janela_funil(self):
+        try:
+            self.janela_funil = Toplevel(self.master)
+            self.janela_funil.title("Grafico de Funil")
+            self.janela_funil.geometry("300x300")
+            self.janela_funil.grab_set()
+            
+            self.lb_eixo_x = ttk.Label(self.janela_funil, text="Eixo X:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_eixo_x.pack(pady=5)
+            
+            self.cb_eixo_x = Combobox(self.janela_funil, values=self.df.columns.tolist())
+            self.cb_eixo_x.pack(pady=5)
+            
+            self.lb_eixo_y = ttk.Label(self.janela_funil, text="Eixo Y:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_eixo_y.pack(pady=5)
+            
+            self.cb_eixo_y = Combobox(self.janela_funil, values=self.df.columns.tolist())
+            self.cb_eixo_y.pack(pady=5)
+            
+            self.lb_titulo = ttk.Label(self.janela_funil, text="Titulo:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_titulo.pack(pady=5)
+            
+            self.entry_titulo = Entry(self.janela_funil, width=20)
+            self.entry_titulo.pack(pady=5)
+            
+            self.lb_imagem = ttk.Label(self.janela_funil, text="Imagem:", style='Dashboard.TLabel', font=('Segoe UI', 10))
+            self.lb_imagem.pack(pady=5)
+            
+            self.cb_imagem = Combobox(self.janela_funil, 
+                                    values=['image1', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7', 'image8'],
+                                    style='Dashboard.TCombobox', font=('Segoe UI', 10))
+            self.cb_imagem.pack(pady=5)
+            
+            self.btn_gerar_1 = ttk.Button(self.janela_funil, text="Grafico 1", style='Dashboard.TButton', command=self.criar_grafico_funil)
+            self.btn_gerar_1.pack(side=LEFT, padx=5, pady=5)
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao abrir a janela de funil: {str(e)}")
+            self.janela_funil.destroy()
+    
+    def criar_grafico_funil(self):
+        try:
+            self.ax.clear()
+            
+            col_x = self.cb_eixo_x.get()
+            col_y = self.cb_eixo_y.get()
+            titulo_grafico = self.entry_titulo.get()
+            nome_imagem = self.cb_imagem.get()
+            
+            df_agrupado = self.df.groupby(col_x).sum()[col_y]
+            df_agrupado = df_agrupado.sort_values(ascending=True)
+            
+            perc_acumuladas = (df_agrupado.cumsum() / df_agrupado.sum()) * 100
+            
+            # Correção do cálculo das alturas usando iloc
+            alturas = [perc_acumuladas.iloc[0]] + [
+                perc_acumuladas.iloc[i] - perc_acumuladas.iloc[i-1] 
+                for i in range(1, len(perc_acumuladas))
+            ]
+
+            # lista de cores hexadecimais para o funil
+            cores = ['#FF9F55', '#F9D423', '#6FCF97', '#5485EC', '#9B51E0', '#FF6F61', '#FF4D4D', '#33CC33', '#3366FF']
+            
+            cores = plt.get_cmap('tab10', len(df_agrupado))(np.arange(len(df_agrupado)))
+
+            # cria as barras do funil
+            for i, (indice, valor) in enumerate(df_agrupado.items()):
+                esquerda = (100 - alturas[i]) / 2
+                self.ax.barh(i, alturas[i], left=esquerda, 
+                         color=cores[i],
+                         alpha=0.7,
+                         edgecolor="white")
+                label = f"{indice}: {int(valor):,d}"
+                largura_barra = alturas[i]
+                centraliza_barra = esquerda + largura_barra / 2
+                self.ax.text(centraliza_barra, i, label, color='black', fontsize=10, ha='center', va='center')
+                
+            df_agrupado = df_agrupado.sort_index()
+                
+            fig, ax = plt.subplots()
+            ax.set_axis_off()
+            self.ax.axis('off')
+            
+            self.canvas.draw()
+            
+            # Salvando a imagem
+            if nome_imagem:
+                caminho_nome_imagem = f'{nome_imagem}.png'
+                caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
+                self.ax.figure.savefig(caminho_imagem, dpi=80)
+            
+            self.janela_funil.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar o gráfico: {str(e)}")
+            
 # Função principal
 def main():
     tela = Tk()
