@@ -101,7 +101,7 @@ class Application(Frame):
             self.frame_controles,
             text="Dashboard 1",
             style='Dashboard.TButton',
-            command=self.criar_dashboard1
+            command=self.abrir_janela_dash_1
         )
         self.btn_dash1.grid(row=0, column=0, padx=5, pady=5)
         
@@ -109,9 +109,17 @@ class Application(Frame):
             self.frame_controles,
             text="Dashboard 2",
             style='Dashboard.TButton',
-            command=self.criar_dashboard2
+            command=self.abrir_janela_dash_2
         )
         self.btn_dash2.grid(row=0, column=1, padx=5, pady=5)
+        
+        self.btn_dash3 = ttk.Button(
+            self.frame_controles,
+            text="Dashboard 3",
+            style='Dashboard.TButton',
+            command=self.abrir_janela_dash_3
+        )
+        self.btn_dash3.grid(row=0, column=2, padx=5, pady=5)
         
         self.btn_editar = ttk.Button(
             self.frame_controles,
@@ -119,7 +127,7 @@ class Application(Frame):
             style='Dashboard.TButton',
             command=self.abrir_janela_editar_dados
         )
-        self.btn_editar.grid(row=0, column=2, padx=5, pady=5)
+        self.btn_editar.grid(row=0, column=3, padx=5, pady=5)
         
         # Frame lateral para botões de gráficos
         self.frame_botoes = ttk.Frame(self.master, style='Dashboard.TFrame')
@@ -1021,6 +1029,113 @@ class Application(Frame):
                     values[j] = np.asscalar(value)
                     
             self.tree.insert('', 'end', values=values)
+            
+    def abrir_janela_dash_1(self):
+        self.dash_1 = Toplevel(self.master)
+        self.dash_1.title("Dashboard 1")
+        self.dash_1.grab_set()
+        
+        img1 = Image.open("image1.png")
+        img1 = img1.resize((600, 500), Image.LANCZOS)
+        self.img1 = ImageTk.PhotoImage(img1)
+        
+        img2 = Image.open("image2.png")
+        img2 = img2.resize((400, 400), Image.LANCZOS)
+        self.img2 = ImageTk.PhotoImage(img2)
+        
+        self.label_1 = Label(self.dash_1, image=self.img1, bd=2, relief=SOLID)
+        self.label_1.image = self.img1
+        self.label_1.grid(row=0, column=0, padx=5, pady=5)
+        
+        self.label_2 = Label(self.dash_1, image=self.img2, bd=2, relief=SOLID)
+        self.label_2.image = self.img2
+        self.label_2.grid(row=0, column=1, padx=5, pady=5)
+        
+        self.dash_1.mainloop()
+        
+    def abrir_janela_dash_2(self):
+        self.dash_2 = Toplevel(self.master)
+        self.dash_2.title("Dashboard 2")
+        self.dash_2.grab_set()
+        
+        img1 = Image.open("image1.png").resize((400, 400), Image.LANCZOS)
+        self.img1 = ImageTk.PhotoImage(img1)
+        
+        img2 = Image.open("image2.png").resize((400, 400), Image.LANCZOS)
+        self.img2 = ImageTk.PhotoImage(img2)
+        
+        img3 = Image.open("image3.png").resize((400, 400), Image.LANCZOS)
+        self.img3 = ImageTk.PhotoImage(img3)
+        
+        img4 = Image.open("image4.png").resize((400, 400), Image.LANCZOS)
+        self.img4 = ImageTk.PhotoImage(img4)
+        
+        self.label_1 = Label(self.dash_2, image=self.img1, bd=2, relief=SOLID)
+        self.label_1.image = self.img1 
+        self.label_1.grid(row=0, column=0, padx=5, pady=5)
+        
+        self.label_2 = Label(self.dash_2, image=self.img2, bd=2, relief=SOLID)
+        self.label_2.image = self.img2
+        self.label_2.grid(row=0, column=1, padx=5, pady=5)
+        
+        self.label_3 = Label(self.dash_2, image=self.img3, bd=2, relief=SOLID)
+        self.label_3.image = self.img3
+        self.label_3.grid(row=1, column=0, padx=5, pady=5)
+        
+        self.label_4 = Label(self.dash_2, image=self.img4, bd=2, relief=SOLID)
+        self.label_4.image = self.img4
+        self.label_4.grid(row=1, column=1, padx=5, pady=5)
+        
+        self.dash_2.mainloop()
+        
+    def abrir_janela_dash_3(self):
+        self.dash_3 = Toplevel(self.master)
+        self.dash_3.title("Dashboard 3")
+        self.dash_3.grab_set()
+        
+        img1 = Image.open("image1.png").resize((400, 400), Image.LANCZOS)
+        self.img1 = ImageTk.PhotoImage(img1)
+        
+        img2 = Image.open("image2.png").resize((400, 400), Image.LANCZOS)
+        self.img2 = ImageTk.PhotoImage(img2)
+        
+        img3 = Image.open("image3.png").resize((400, 400), Image.LANCZOS)
+        self.img3 = ImageTk.PhotoImage(img3)
+        
+        img4 = Image.open("image4.png").resize((400, 400), Image.LANCZOS)
+        self.img4 = ImageTk.PhotoImage(img4)
+        
+        img5 = Image.open("image5.png").resize((400, 400), Image.LANCZOS)
+        self.img5 = ImageTk.PhotoImage(img5)
+        
+        img6 = Image.open("image6.png").resize((400, 400), Image.LANCZOS)
+        self.img6 = ImageTk.PhotoImage(img6)
+        
+        self.label_1 = Label(self.dash_3, image=self.img1, bd=2, relief=SOLID)
+        self.label_1.image = self.img1 
+        self.label_1.grid(row=0, column=0, padx=5, pady=5)
+        
+        self.label_2 = Label(self.dash_3, image=self.img2, bd=2, relief=SOLID)
+        self.label_2.image = self.img2
+        self.label_2.grid(row=0, column=1, padx=5, pady=5)
+        
+        self.label_3 = Label(self.dash_3, image=self.img3, bd=2, relief=SOLID)
+        self.label_3.image = self.img3
+        self.label_3.grid(row=0, column=2, padx=5, pady=5)
+        
+        self.label_4 = Label(self.dash_3, image=self.img4, bd=2, relief=SOLID)
+        self.label_4.image = self.img4
+        self.label_4.grid(row=1, column=0, padx=5, pady=5)
+        
+        self.label_5 = Label(self.dash_3, image=self.img5, bd=2, relief=SOLID)
+        self.label_5.image = self.img5
+        self.label_5.grid(row=1, column=1, padx=5, pady=5)
+        
+        self.label_6 = Label(self.dash_3, image=self.img6, bd=2, relief=SOLID)
+        self.label_6.image = self.img6
+        self.label_6.grid(row=1, column=2, padx=5, pady=5)
+        
+        self.dash_3.mainloop()
     
 # Função principal
 def main():
