@@ -117,7 +117,7 @@ class Application(Frame):
             self.frame_controles,
             text="Editar Dados",
             style='Dashboard.TButton',
-            command=self.editar_dados
+            command=self.abrir_janela_editar_dados
         )
         self.btn_editar.grid(row=0, column=2, padx=5, pady=5)
         
@@ -747,6 +747,281 @@ class Application(Frame):
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao criar o gráfico: {str(e)}")
             
+    def abrir_janela_editar_dados(self):
+        self.editar_dados = Toplevel(self.master)
+        self.editar_dados.title("Editar Dados")
+        self.editar_dados.grab_set()
+        self.editar_dados.configure(bg=self.cor_bg)
+        
+        # Menu com estilo personalizado
+        menu_editar_dados = Menu(
+            self.editar_dados,
+            tearoff=0,
+            bg=self.cor_primaria,
+            fg='white',
+            activebackground=self.cor_destaque,
+            activeforeground='white'
+        )
+        self.editar_dados.config(menu=menu_editar_dados)
+        
+        menu_salvar = Menu(
+            menu_editar_dados,
+            tearoff=0,
+            bg=self.cor_primaria,
+            fg='white',
+            activebackground=self.cor_destaque,
+            activeforeground='white'
+        )
+        menu_editar_dados.add_cascade(label="Formatar", menu=menu_salvar)
+        
+        menu_salvar.add_command(label="Renomear colunas", command=self.renomear_colunas)
+        menu_salvar.add_command(label="Remover colunas", command=self.remover_colunas)
+        menu_salvar.add_command(label="Remover linhas em Branco", command=self.remove_linhas_brancas)
+        menu_salvar.add_command(label="Remover linhas Alternadas", command=self.remove_algumas_linhas)
+        menu_salvar.add_command(label="Remover linhas Duplicadas", command=self.remover_linhas_duplicadas)
+        
+        # Frame principal
+        frame_principal = ttk.Frame(self.editar_dados, style='Dashboard.TFrame')
+        frame_principal.pack(fill=BOTH, expand=True, padx=10, pady=10)
+        
+        # Título
+        titulo = ttk.Label(
+            frame_principal,
+            text=f"Editar Dados: {','.join(self.df.columns)}",
+            style='Dashboard.TLabel',
+            font=('Segoe UI', 12, 'bold')
+        )
+        titulo.pack(pady=10)
+        
+        # Treeview com estilo personalizado
+        style = ttk.Style()
+        style.configure(
+            "Treeview",
+            background=self.cor_bg,
+            foreground=self.cor_texto,
+            fieldbackground=self.cor_bg,
+            font=('Segoe UI', 10)
+        )
+        style.configure(
+            "Treeview.Heading",
+            background=self.cor_primaria,
+            foreground="white",
+            font=('Segoe UI', 10, 'bold')
+        )
+        
+        self.tree = ttk.Treeview(
+            frame_principal,
+            columns=list(self.df.columns),
+            show='headings',
+            style="Treeview"
+        )
+        
+        # Scrollbars
+        scrolly = ttk.Scrollbar(frame_principal, orient=VERTICAL, command=self.tree.yview)
+        scrollx = ttk.Scrollbar(frame_principal, orient=HORIZONTAL, command=self.tree.xview)
+        self.tree.configure(yscrollcommand=scrolly.set, xscrollcommand=scrollx.set)
+        
+        # Configurando cabeçalhos e dados
+        for col in self.df.columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=100)
+        
+        for i, row in self.df.iterrows():
+            self.tree.insert('', 'end', values=list(row))
+            
+        # Layout dos componentes
+        scrolly.pack(side=RIGHT, fill=Y)
+        scrollx.pack(side=BOTTOM, fill=X)
+        self.tree.pack(fill=BOTH, expand=True)
+        
+    def renomear_colunas(self):
+        janela_renomear_colunas = Toplevel(self.editar_dados)
+        janela_renomear_colunas.title("Renomear Colunas")
+        largura = 400
+        altura = 250
+        largura_tela = (self.editar_dados.winfo_screenwidth() - largura) // 2
+        altura_tela = (self.editar_dados.winfo_screenheight() - altura) // 2
+        janela_renomear_colunas.geometry(f"{largura}x{altura}+{largura_tela}+{altura_tela}")
+        janela_renomear_colunas.grab_set()
+        
+        label_coluna = ttk.Label(
+            janela_renomear_colunas,
+            text="Selecione a coluna que deseja renomear:",
+            style='Dashboard.TLabel',
+            font=('Segoe UI', 12, 'bold')
+        )
+        label_coluna.pack(pady=10)
+        
+        entry_coluna = Entry(
+            janela_renomear_colunas,
+            width=20,
+            font=('Segoe UI', 10),
+        )
+        entry_coluna.pack(pady=10)
+        
+        label_novo_nome = ttk.Label(
+            janela_renomear_colunas,
+            text="Digite o novo nome para a coluna:",
+            style='Dashboard.TLabel',
+            font=('Segoe UI', 12, 'bold')
+        )
+        label_novo_nome.pack(pady=10)
+        
+        entry_novo_nome = Entry(
+            janela_renomear_colunas,
+            width=20,
+            font=('Segoe UI', 10),
+        )
+        entry_novo_nome.pack(pady=10)
+        
+        btn_renomear = ttk.Button(
+            janela_renomear_colunas,
+            text="Renomear",
+            style='Dashboard.TButton',
+            command=lambda: self.renomear_coluna_funcao(entry_coluna.get(), entry_novo_nome.get(), janela_renomear_colunas)
+        )
+        btn_renomear.pack(pady=10)
+        
+    def remover_colunas(self):
+        janela_remover_colunas = Toplevel(self.editar_dados)
+        janela_remover_colunas.title("Remover Colunas")
+        largura = 400
+        altura = 250
+        largura_tela = (self.editar_dados.winfo_screenwidth() - largura) // 2
+        altura_tela = (self.editar_dados.winfo_screenheight() - altura) // 2
+        janela_remover_colunas.geometry(f"{largura}x{altura}+{largura_tela}+{altura_tela}")
+        janela_remover_colunas.grab_set()
+        
+        label_coluna = ttk.Label(
+            janela_remover_colunas,
+            text="Selecione a coluna que deseja remover:",
+            style='Dashboard.TLabel',
+            font=('Segoe UI', 12, 'bold')
+        )
+        label_coluna.pack(pady=10)
+        
+        entry_coluna = Entry(
+            janela_remover_colunas,
+            width=20,
+            font=('Segoe UI', 10),
+        )
+        entry_coluna.pack(pady=10)
+        
+        
+        btn_remover = ttk.Button(
+            janela_remover_colunas,
+            text="Remover",
+            style='Dashboard.TButton',
+            command=lambda: self.remover_coluna_funcao(entry_coluna.get(), janela_remover_colunas)
+        )
+        btn_remover.pack(pady=10)
+        
+    
+    def remover_coluna_funcao(self, coluna, janela):
+        if coluna in self.df.columns:
+            self.df.drop(columns=[coluna], inplace=True)
+            janela.destroy()
+            self.atualizar_treeview()
+            messagebox.showinfo("Sucesso", "Coluna renomeada com sucesso!")
+        else:
+            messagebox.showerror("Erro", "Coluna não encontrada!")
+        
+    
+    def renomear_coluna_funcao(self, coluna, novo_nome, janela):
+        if coluna in self.df.columns:
+            self.df.rename(columns={coluna: novo_nome}, inplace=True)
+            janela.destroy()
+            self.atualizar_treeview()
+            messagebox.showinfo("Sucesso", "Coluna renomeada com sucesso!")
+        else:
+            messagebox.showerror("Erro", "Coluna não encontrada!")
+            
+    def remove_linhas_brancas(self):
+        resposta = messagebox.askyesno("Confirmação", "Tem certeza que deseja remover as linhas em branco?")
+        
+        if resposta:
+            self.df = self.df.dropna(axis=0)  # remover as linhas que tiverem pelo menos um valor nulo
+            self.atualizar_treeview()
+            messagebox.showinfo("Sucesso", "Linhas removidas com sucesso!")
+            
+        else:
+            messagebox.showinfo("Cancelado", "Remoção de linhas cancelada!")
+            
+    def remove_algumas_linhas(self, linha_inicio=None, linha_fim=None):
+        linha_inicio = int(simpledialog.askstring("Remover Linhas", "Digite o número da linha inicial:"))
+        linha_fim = int(simpledialog.askstring("Remover Linhas", "Digite o número da linha final:"))
+        
+        resposta = messagebox.askyesno("Confirmação", "Tem certeza que deseja remover as linhas de " + str(linha_inicio) + " a " + str(linha_fim) + "?")
+        
+        if resposta:
+            self.df = self.df.drop(range(linha_inicio - 1, linha_fim))
+            self.atualizar_treeview()
+            messagebox.showinfo("Sucesso", "Linhas removidas com sucesso!")
+            
+        else:
+            messagebox.showinfo("Cancelado", "Remoção de linhas cancelada!")
+            
+    def remover_linhas_duplicadas(self):
+        janela_remover_linhas_duplicadas = Toplevel(self.editar_dados)
+        janela_remover_linhas_duplicadas.title("Remover Linhas Duplicadas")
+        largura = 400
+        altura = 250
+        largura_tela = (self.editar_dados.winfo_screenwidth() - largura) // 2
+        altura_tela = (self.editar_dados.winfo_screenheight() - altura) // 2
+        janela_remover_linhas_duplicadas.geometry(f"{largura}x{altura}+{largura_tela}+{altura_tela}")
+        janela_remover_linhas_duplicadas.grab_set()
+        
+        label_coluna = ttk.Label(
+            janela_remover_linhas_duplicadas,
+            text="Selecione a coluna que deseja remover:",
+            style='Dashboard.TLabel',
+            font=('Segoe UI', 12, 'bold')
+        )
+        label_coluna.pack(pady=10)
+        
+        entry_coluna = Entry(
+            janela_remover_linhas_duplicadas,
+            width=20,
+            font=('Segoe UI', 10),
+        )
+        entry_coluna.pack(pady=10)
+        
+        btn_remover = ttk.Button(
+            janela_remover_linhas_duplicadas,
+            text="Remover",
+            style='Dashboard.TButton',
+            command=lambda: self.remover_linha_duplicada_funcao(entry_coluna.get(), janela_remover_linhas_duplicadas)
+        )
+        btn_remover.pack(pady=10)
+        
+    
+    def remover_linha_duplicada_funcao(self, coluna, janela):
+        if coluna in self.df.columns:
+            self.df = self.df.drop_duplicates(subset=[coluna], keep='first')
+            janela.destroy()
+            self.atualizar_treeview()
+            messagebox.showinfo("Sucesso", "Linhas duplicadas removidas com sucesso!")
+        else:
+            messagebox.showerror("Erro", "Coluna não encontrada!")
+            
+    def atualizar_treeview(self):
+        self.tree.delete(*self.tree.get_children())
+        
+        self.tree['columns'] = list(self.df.columns)
+        
+        for col in self.df.columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=100)
+            
+        for i, row in self.df.iterrows():
+            values = list(row)
+            
+            for j, value in enumerate(values):
+                if isinstance(value, np.generic):
+                    values[j] = np.asscalar(value)
+                    
+            self.tree.insert('', 'end', values=values)
+    
 # Função principal
 def main():
     tela = Tk()
