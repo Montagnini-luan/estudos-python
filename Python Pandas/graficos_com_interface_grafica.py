@@ -188,18 +188,6 @@ class Application(Frame):
                 messagebox.showerror("Erro", f"Erro ao carregar o arquivo: {str(e)}")
         else:
             messagebox.showerror("Erro", "Nenhum arquivo selecionado")
-        
-    def criar_dashboard1(self):
-        # Implementar dashboard 1
-        pass
-        
-    def criar_dashboard2(self):
-        # Implementar dashboard 2
-        pass
-        
-    def editar_dados(self):
-        # Implementar edição de dados
-        pass
     
     def abrir_janela_colunas(self):
         try:
@@ -456,22 +444,33 @@ class Application(Frame):
                                     style='Dashboard.TCombobox', font=('Segoe UI', 10))
             self.cb_imagem.pack(pady=5)
             
-            self.btn_gerar_1 = ttk.Button(self.janela_linhas, text="Grafico 1", style='Dashboard.TButton', command=self.criar_grafico_linhas)
-            self.btn_gerar_1.pack(side=LEFT, padx=5, pady=5)
+            frame_botoes = ttk.Frame(self.janela_linhas)
+            frame_botoes.pack(pady=5)
+            
+            self.btn_gerar_1 = ttk.Button(frame_botoes, text="Grafico 1", style='Dashboard.TButton', command=self.criar_grafico_linhas)
+            self.btn_gerar_1.pack(side=LEFT, padx=5)
 
-            self.btn_gerar_2 = ttk.Button(self.janela_linhas, text="Grafico 2", style='Dashboard.TButton', command=self.criar_grafico_linhas_2)
-            self.btn_gerar_2.pack(side=LEFT, padx=5, pady=5)
+            self.btn_gerar_2 = ttk.Button(frame_botoes, text="Grafico 2", style='Dashboard.TButton', command=self.criar_grafico_linhas_2)
+            self.btn_gerar_2.pack(side=LEFT, padx=5)
             
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao abrir a janela de linhas: {str(e)}")
-            self.janela_linhas.destroy()
+            if hasattr(self, 'janela_linhas'):
+                self.janela_linhas.destroy()
             
     def criar_grafico_linhas(self):
         try:
+            if not hasattr(self, 'df') or self.df is None:
+                raise ValueError("Nenhum arquivo de dados carregado")
+                
             self.ax.clear()
             
             col_x = self.cb_eixo_x.get()
             col_y = self.cb_eixo_y.get()
+            
+            if not col_x or not col_y:
+                raise ValueError("Selecione as colunas para os eixos X e Y")
+                
             titulo_grafico = self.entry_titulo.get()
             nome_imagem = self.cb_imagem.get()
             
@@ -483,15 +482,17 @@ class Application(Frame):
             self.ax.set_title(f"Grafico de Linhas - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
             
             for i, v in enumerate(df_agrupado.values):
-                self.ax.annotate(f'{v:.0f}', xy=(df_agrupado.index[i], df_agrupado.values[i]), ha='center', va='bottom')
+                self.ax.annotate(f'{v:.0f}', xy=(i, v), ha='center', va='bottom')
 
+            self.ax.set_xticks(range(len(df_agrupado.index)))
+            self.ax.set_xticklabels(df_agrupado.index, rotation=45)
+            
             self.canvas.draw()
             
-            # Salvando a imagem
             if nome_imagem:
                 caminho_nome_imagem = f'{nome_imagem}.png'
                 caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
-                self.ax.figure.savefig(caminho_imagem, dpi=80)
+                self.fig.savefig(caminho_imagem, dpi=80, bbox_inches='tight')
             
             self.janela_linhas.destroy()
             
@@ -500,23 +501,30 @@ class Application(Frame):
             
     def criar_grafico_linhas_2(self):
         try:
+            if not hasattr(self, 'df') or self.df is None:
+                raise ValueError("Nenhum arquivo de dados carregado")
+                
             self.ax.clear()
             
             col_x = self.cb_eixo_x.get()
             col_y = self.cb_eixo_y.get()
+            
+            if not col_x or not col_y:
+                raise ValueError("Selecione as colunas para os eixos X e Y")
+                
             titulo_grafico = self.entry_titulo.get()
             nome_imagem = self.cb_imagem.get()
             
             df_agrupado = self.df.groupby(col_x).sum()[col_y]
             
-            self.ax.plot(df_agrupado.index, df_agrupado.values, '-o', color='mediumseagreen', linewidth=2, markersize=8)
+            self.ax.plot(range(len(df_agrupado.index)), df_agrupado.values, '-o', 
+                        color='mediumseagreen', linewidth=2, markersize=8)
             self.ax.set_xlabel(col_x)
             self.ax.set_ylabel(col_y)
             self.ax.set_title(f"Grafico de Linhas - {col_x} x {col_y}" if not titulo_grafico else titulo_grafico)
             
             for i, v in enumerate(df_agrupado.values):
-                valor_formatado = f'{v:.0f}'.format(v)
-                self.ax.annotate(valor_formatado, xy=(df_agrupado.index[i], df_agrupado.values[i]), ha='center', va='bottom', fontsize=10)
+                self.ax.annotate(f'{v:.0f}', xy=(i, v), ha='center', va='bottom', fontsize=10)
             
             self.ax.set_facecolor('white')
             self.ax.grid(color='lightgray', linestyle='--', linewidth=0.5)
@@ -525,11 +533,10 @@ class Application(Frame):
             
             self.canvas.draw()
             
-            # Salvando a imagem
             if nome_imagem:
                 caminho_nome_imagem = f'{nome_imagem}.png'
                 caminho_imagem = os.path.join(os.getcwd(), caminho_nome_imagem)
-                self.ax.figure.savefig(caminho_imagem, dpi=80)
+                self.fig.savefig(caminho_imagem, dpi=80, bbox_inches='tight')
             
             self.janela_linhas.destroy()
             
