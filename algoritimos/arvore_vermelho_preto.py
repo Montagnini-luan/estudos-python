@@ -1,6 +1,10 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
+"""
+Arvore Vermelho Preto
+"""
+
 class No:
     def __init__(self, dado, cor, pai=None) -> None:
         self.dado = dado
