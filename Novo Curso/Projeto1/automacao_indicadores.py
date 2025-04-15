@@ -70,7 +70,7 @@ for loja in dicionario_lojas:
     ticket_medio_dia = valor_venda_dia['Valor Final'].sum().mean()
     #print(ticket_medio_dia)
 
-
+""""
     #enviar email
     outlook = win32com.client.Dispatch("Outlook.Application")
 
@@ -119,3 +119,18 @@ for loja in dicionario_lojas:
     mail.Send()
 
     print('Email da Loja {} enviado'.format(loja))
+"""
+
+faturamento_lojas = vendas.groupby('Loja')[['Loja', 'Valor Final']].sum()
+faturamento_lojas = faturamento_lojas.sort_values(by='Valor Final', ascending=False)
+
+print(faturamento_lojas)
+
+vendas_dia = vendas.loc[vendas['Data'] == dia_indicador, :]
+faturamento_lojas_dia = vendas_loja_dia.groupby('Loja')[['Loja', 'Valor Final']].sum()
+faturamento_lojas_dia = faturamento_lojas_dia.sort_values(by='Valor Final', ascending=False)
+
+print(faturamento_lojas_dia)
+
+
+
