@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}
+        FakePinterest
+        {% endblock %}
+    </title>
+</head>
+{% block body %}
+<body>
+    <header>
+        <h1>Home Page</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Bem vindo</h2>
+            <p>Essa e a pagina principal</p>
+            
+            {% block formulario %}
+            <form method="POST">
+                {{ form.csrf_token }}  <!-- Protecao contra ataques -->
+
+                {{ form.email.label() }}
+                {{ form.email() }}
+
+                {{ form.senha.label() }}
+                {{ form.senha() }}
+
+                {{ form.botao_confirmacao() }}
+            </form>
+            {% endblock %}
+
+        </section>
+    </main>
+</body>
+<footer>
+    <p>&copy; 2024 My Website</p>
+</footer>
+{% endblock %}
+</html>
