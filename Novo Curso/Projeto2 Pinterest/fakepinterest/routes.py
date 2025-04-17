@@ -6,6 +6,7 @@ from fakepinterest.models import Usuario, Foto
 import os
 from werkzeug.utils import secure_filename
 
+
 @app.route("/", methods=['GET', 'POST'])
 def homepage():
     formLogin = FormLogin()
@@ -53,6 +54,7 @@ def perfil(id_usuario):
         usuario = Usuario.query.get(int(id_usuario))
         return render_template('perfil.html', usuario=usuario, form=None)
 
+
 @app.route('/logout')
 @login_required
 def logout():
@@ -60,4 +62,9 @@ def logout():
     return redirect(url_for('homepage'))
 
 
+@app.route('/feed')
+@login_required
+def feed():
+    fotos = Foto.query.order_by(Foto.data_criacao.desc()).all()[:15]
+    return render_template('feed.html', fotos=fotos)
 
